@@ -37,6 +37,7 @@ class ModelSampleArgs(BaseModel):
 
 class ModelGenRequest(BaseModel):
     model: str
+    softprompt: Optional[str]
     prompt: str
     sample_args: ModelSampleArgs
     gen_args: ModelGenArgs
