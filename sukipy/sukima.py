@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import json
 import logging
 
@@ -9,15 +10,19 @@ from sukipy.models.requests import ModelGenRequest
 
 class Sukima:
     def __init__(self, *,
-                 addr: str):
+                 addr: str,
+                 username: str,
+                 password: str):
         if addr.endswith("/"):
             addr = addr[:-1]
         self.addr = addr
+        self.username = username  # There's a better way to authenticate, right?
+        self.password = password
         self.token = None
 
     # Maybe use events.
-    async def authorize(self, username, password):
-        r = await self.post(f"{self.addr}/api/v1/users/token", data={"username": username, "password": password})
+    async def authenticate(self):
+        r = await self.post(f"{self.addr}/api/v1/users/token", data={"username": self.username, "password": self.password})
         if r.status == 200:
             self.token = (await r.json())["access_token"]
 
@@ -52,6 +57,7 @@ class Sukima:
             raise Exception("Unable to fetch models.")  # Make use of exceptions.py...
 
     # There's a way to sync these endpoint locations with the backend repo, right?
+    # Decorators soontm?
     async def generate(self, args: ModelGenRequest, *, raw_output=False):
         r = await self.post(f"{self.addr}/api/v1/models/generate", data=args.json(), auth=self.token)
 
@@ -59,6 +65,6 @@ class Sukima:
             if raw_output:
                 return (await r.json())["completion"]["text"]
             else:
-                return (await r.json())["completion"]["text"][len(args["prompt"]):]
+                return (await r.json())["completion"]["text"][len(args.prompt):]
         else:
             raise Exception("Unable to generate text.", r.json())
