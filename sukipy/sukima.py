@@ -63,8 +63,8 @@ class Sukima:
 
         if r.status == 200:
             if raw_output:
-                return (await r.json())["completion"]["text"]
+                return (await r.json())["output"]
             else:
-                return (await r.json())["completion"]["text"][len(args.prompt):]
+                return (await r.json())["output"][len(args.prompt):]
         else:
             raise Exception("Unable to generate text.", r.json())
